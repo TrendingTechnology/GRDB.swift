@@ -2219,11 +2219,9 @@ struct ArrayRowImpl: RowImpl {
     }
 }
 
-#if swift(>=5.5) && canImport(_Concurrency)
 // @unchecked because columns property is not inferred as Sendable
 // TODO: remove this @unchecked when compiler can handle tuples.
 extension ArrayRowImpl: @unchecked Sendable { }
-#endif
 
 
 // TODO: merge with ArrayRowImpl eventually?
