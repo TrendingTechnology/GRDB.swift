@@ -9,13 +9,13 @@
 ///
 ///     let rows = Row.fetchCursor(db, sql: "SELECT ...")
 ///     while let row = try rows.next() {
-///         let int: Int = row[0]                 // there
+///         let int: Int = try row[0]                  // there
 ///     }
 ///     let ints = Int.fetchAll(db, sql: "SELECT ...") // there
 ///     struct Player {
-///         init(row: Row) {
-///             name = row["name"]                // there
-///             score = row["score"]              // there
+///         init(row: Row) throws {
+///             name = try row["name"]                 // there
+///             score = try row["score"]               // there
 ///         }
 ///     }
 public protocol StatementColumnConvertible {
@@ -160,7 +160,7 @@ public final class FastDatabaseValueCursor<Value: DatabaseValueConvertible & Sta
         }
         
         // Assume cursor is created for immediate iteration: reset and set arguments
-        statement.reset(withArguments: arguments)
+        try statement.reset(withArguments: arguments)
     }
     
     deinit {
@@ -199,8 +199,7 @@ public final class FastDatabaseValueCursor<Value: DatabaseValueConvertible & Sta
             try _statement.database.statementDidExecute(_statement)
             return nil
         case SQLITE_ROW:
-            // TODO GRDB6: don't crash on decoding errors
-            return try! Value.fastDecode(
+            return try Value.fastDecode(
                 fromStatement: _sqliteStatement,
                 atUncheckedIndex: _columnIndex,
                 context: RowDecodingContext(statement: _statement, index: Int(_columnIndex)))
@@ -245,7 +244,7 @@ where Value: DatabaseValueConvertible & StatementColumnConvertible
         }
         
         // Assume cursor is created for immediate iteration: reset and set arguments
-        statement.reset(withArguments: arguments)
+        try statement.reset(withArguments: arguments)
     }
     
     deinit {
@@ -284,8 +283,7 @@ where Value: DatabaseValueConvertible & StatementColumnConvertible
             try _statement.database.statementDidExecute(_statement)
             return nil
         case SQLITE_ROW:
-            // TODO GRDB6: don't crash on decoding errors
-            return try! Value.fastDecodeIfPresent(
+            return try Value.fastDecodeIfPresent(
                 fromStatement: _sqliteStatement,
                 atUncheckedIndex: _columnIndex,
                 context: RowDecodingContext(statement: _statement, index: Int(_columnIndex)))

@@ -147,7 +147,7 @@ public final class DatabaseValueCursor<Value: DatabaseValueConvertible>: Cursor 
         }
         
         // Assume cursor is created for immediate iteration: reset and set arguments
-        statement.reset(withArguments: arguments)
+        try statement.reset(withArguments: arguments)
     }
     
     deinit {
@@ -185,8 +185,7 @@ public final class DatabaseValueCursor<Value: DatabaseValueConvertible>: Cursor 
             try _statement.database.statementDidExecute(_statement)
             return nil
         case SQLITE_ROW:
-            // TODO GRDB6: don't crash on decoding errors
-            return try! Value.decode(
+            return try Value.decode(
                 fromStatement: _sqliteStatement,
                 atUncheckedIndex: _columnIndex,
                 context: RowDecodingContext(statement: _statement, index: Int(_columnIndex)))
@@ -227,7 +226,7 @@ public final class NullableDatabaseValueCursor<Value: DatabaseValueConvertible>:
         }
         
         // Assume cursor is created for immediate iteration: reset and set arguments
-        statement.reset(withArguments: arguments)
+        try statement.reset(withArguments: arguments)
     }
     
     deinit {
@@ -265,8 +264,7 @@ public final class NullableDatabaseValueCursor<Value: DatabaseValueConvertible>:
             try _statement.database.statementDidExecute(_statement)
             return nil
         case SQLITE_ROW:
-            // TODO GRDB6: don't crash on decoding errors
-            return try! Value.decodeIfPresent(
+            return try Value.decodeIfPresent(
                 fromStatement: _sqliteStatement,
                 atUncheckedIndex: _columnIndex,
                 context: RowDecodingContext(statement: _statement, index: Int(_columnIndex)))

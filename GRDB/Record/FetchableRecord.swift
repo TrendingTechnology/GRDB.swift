@@ -25,7 +25,7 @@ public protocol FetchableRecord {
     /// For performance reasons, the row argument may be reused during the
     /// iteration of a fetch query. If you want to keep the row for later use,
     /// make sure to store a copy: `self.row = row.copy()`.
-    init(row: Row)
+    init(row: Row) throws
     
     // MARK: - Customizing the Format of Database Columns
     
@@ -384,7 +384,7 @@ extension FetchableRecord {
         if let supplementaryFetch = request.supplementaryFetch {
             let rows = try Row.fetchAll(request.statement, adapter: request.adapter)
             try supplementaryFetch(db, rows)
-            return rows.map(Self.init(row:))
+            return try rows.map(Self.init(row:))
         } else {
             return try fetchAll(request.statement, adapter: request.adapter)
         }
@@ -407,7 +407,7 @@ extension FetchableRecord {
                 return nil
             }
             try supplementaryFetch(db, [row])
-            return .init(row: row)
+            return try .init(row: row)
         } else {
             return try fetchOne(request.statement, adapter: request.adapter)
         }
@@ -430,7 +430,7 @@ extension FetchableRecord where Self: Hashable {
         if let supplementaryFetch = request.supplementaryFetch {
             let rows = try Row.fetchAll(request.statement, adapter: request.adapter)
             try supplementaryFetch(db, rows)
-            return Set(rows.lazy.map(Self.init(row:)))
+            return try Set(rows.lazy.map(Self.init(row:)))
         } else {
             return try fetchSet(request.statement, adapter: request.adapter)
         }
@@ -527,7 +527,7 @@ public final class RecordCursor<Record: FetchableRecord>: Cursor {
         _sqliteStatement = statement.sqliteStatement
         
         // Assume cursor is created for immediate iteration: reset and set arguments
-        statement.reset(withArguments: arguments)
+        try statement.reset(withArguments: arguments)
     }
     
     deinit {
@@ -565,7 +565,7 @@ public final class RecordCursor<Record: FetchableRecord>: Cursor {
             try _statement.database.statementDidExecute(_statement)
             return nil
         case SQLITE_ROW:
-            return Record(row: _row)
+            return try Record(row: _row)
         case let code:
             _state = .failed
             try _statement.database.statementDidFail(_statement, withResultCode: code)

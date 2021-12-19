@@ -158,6 +158,7 @@ public final class Statement {
         }
     }()
     
+    #warning("TODO GRDB6: remove setter")
     /// The statement arguments.
     public var arguments: StatementArguments {
         get { _arguments }
@@ -278,14 +279,14 @@ public final class Statement {
         }
     }
     
-    func reset(withArguments arguments: StatementArguments?) {
+    func reset(withArguments arguments: StatementArguments?) throws {
         // Force arguments validity: it is a programmer error to provide
         // arguments that do not match the statement.
         if let arguments = arguments {
-            try! setArguments(arguments)
+            try setArguments(arguments)
         } else if argumentsNeedValidation {
-            try! reset()
-            try! validateArguments(self.arguments)
+            try reset()
+            try validateArguments(self.arguments)
         }
     }
 }
@@ -343,7 +344,7 @@ final class StatementCursor: Cursor {
         _sqliteStatement = statement.sqliteStatement
         
         // Assume cursor is created for immediate iteration: reset and set arguments
-        statement.reset(withArguments: arguments)
+        try statement.reset(withArguments: arguments)
     }
     
     deinit {
@@ -418,7 +419,7 @@ extension Statement {
     /// - throws: A DatabaseError whenever an SQLite error occurs.
     public func execute(arguments: StatementArguments? = nil) throws {
         SchedulingWatchdog.preconditionValidQueue(database)
-        reset(withArguments: arguments)
+        try reset(withArguments: arguments)
         
         // Statement does not know how to execute itself, because it does not
         // know how to handle its errors, or if truncate optimisation should be

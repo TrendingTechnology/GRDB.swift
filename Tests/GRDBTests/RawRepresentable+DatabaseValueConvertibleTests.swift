@@ -67,7 +67,7 @@ class RawRepresentableDatabaseValueConvertibleTests: GRDBTestCase {
             
             do {
                 let rows = try Row.fetchAll(db, sql: "SELECT color FROM wines ORDER BY color")
-                let colors = rows.map { $0[0] as Color32? }
+                let colors = try rows.map { try $0[0] as Color32? }
                 XCTAssertTrue(colors[0] == nil)
                 XCTAssertEqual(colors[1]!, Color32.red)
                 XCTAssertEqual(colors[2]!, Color32.white)
@@ -99,7 +99,7 @@ class RawRepresentableDatabaseValueConvertibleTests: GRDBTestCase {
             
             do {
                 let rows = try Row.fetchAll(db, sql: "SELECT color FROM wines ORDER BY color")
-                let colors = rows.map { $0[0] as Color64? }
+                let colors = try rows.map { try $0[0] as Color64? }
                 XCTAssertTrue(colors[0] == nil)
                 XCTAssertEqual(colors[1]!, Color64.red)
                 XCTAssertEqual(colors[2]!, Color64.white)
@@ -131,7 +131,7 @@ class RawRepresentableDatabaseValueConvertibleTests: GRDBTestCase {
             
             do {
                 let rows = try Row.fetchAll(db, sql: "SELECT color FROM wines ORDER BY color")
-                let colors = rows.map { $0[0] as Color? }
+                let colors = try rows.map { try $0[0] as Color? }
                 XCTAssertTrue(colors[0] == nil)
                 XCTAssertEqual(colors[1]!, Color.red)
                 XCTAssertEqual(colors[2]!, Color.white)
@@ -163,7 +163,7 @@ class RawRepresentableDatabaseValueConvertibleTests: GRDBTestCase {
             
             do {
                 let rows = try Row.fetchAll(db, sql: "SELECT grape FROM wines ORDER BY grape")
-                let grapes = rows.map { $0[0] as Grape? }
+                let grapes = try rows.map { try $0[0] as Grape? }
                 XCTAssertTrue(grapes[0] == nil)
                 XCTAssertEqual(grapes[1]!, Grape.chardonnay)
                 XCTAssertEqual(grapes[2]!, Grape.merlot)

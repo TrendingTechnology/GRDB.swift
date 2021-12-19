@@ -581,7 +581,7 @@ class DatabaseMigratorTests : GRDBTestCase {
                 var rows = try Row.fetchAll(db, sql: "SELECT * FROM persons")
                 XCTAssertEqual(rows.count, 1)
                 var row = rows.first!
-                XCTAssertEqual(row["name"] as String, "Arthur")
+                try XCTAssertEqual(row["name"] as String, "Arthur")
                 
                 // persons table has no "tmp" column (migration 2)
                 XCTAssertEqual(Array(row.columnNames), ["id", "name"])
@@ -590,7 +590,7 @@ class DatabaseMigratorTests : GRDBTestCase {
                 rows = try Row.fetchAll(db, sql: "SELECT * FROM pets")
                 XCTAssertEqual(rows.count, 1)
                 row = rows.first!
-                XCTAssertEqual(row["name"] as String, "Bobby")
+                try XCTAssertEqual(row["name"] as String, "Bobby")
             }
         }
     }
