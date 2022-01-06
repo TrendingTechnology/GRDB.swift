@@ -1,18 +1,34 @@
-import GRDB
+import XCTest
+@testable import GRDB
 
-class DatabasePoolBackupTests: BackupTestCase {
-    
-    func testDatabaseWriterBackup() throws {
+class DatabasePoolBackupTests: GRDBTestCase {
+
+    func testBackup() throws {
         // SQLCipher can't backup encrypted databases: use a pristine Configuration
-        let source: DatabaseWriter = try makeDatabasePool(filename: "source.sqlite", configuration: Configuration())
-        let destination: DatabaseWriter = try makeDatabasePool(filename: "destination.sqlite", configuration: Configuration())
-        try testDatabaseWriterBackup(from: source, to: destination)
-    }
-    
-    func testDatabaseBackup() throws {
-        let source: DatabaseWriter = try makeDatabasePool(filename: "source.sqlite", configuration: Configuration())
-        let destination: DatabaseWriter = try makeDatabasePool(filename: "destination.sqlite", configuration: Configuration())
-        try testDatabaseBackup(from: source, to: destination)
+        let source = try makeDatabasePool(filename: "source.sqlite", configuration: Configuration())
+        let destination = try makeDatabasePool(filename: "destination.sqlite", configuration: Configuration())
+        
+        try source.write { db in
+            try db.execute(sql: "CREATE TABLE item (id INTEGER PRIMARY KEY)")
+            try db.execute(sql: "INSERT INTO item (id) VALUES (NULL)")
+            XCTAssertEqual(try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM item")!, 1)
+        }
+        
+        try source.backup(to: destination)
+        
+        try destination.read { db in
+            XCTAssertEqual(try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM item")!, 1)
+        }
+        
+        try source.write { db in
+            try db.execute(sql: "DROP TABLE item")
+        }
+        
+        try source.backup(to: destination)
+        
+        try destination.read { db in
+            XCTAssertFalse(try db.tableExists("item"))
+        }
     }
     
     // TODO: fix flaky test
